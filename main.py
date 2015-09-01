@@ -23,9 +23,18 @@ class GameWindow(pyglet.window.Window):
     def setup_opengl(self):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glClearColor(0.2, 0.2, 0.2, 1)
 
+    def draw_line(self, a ,b):
+        glLineWidth(1)
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
+            ('v2i', (a[0], a[1], b[0], b[1]))
+        )
+
     def draw_test(self):
+        self.draw_line([10, 10], [400, 20])
         pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
             [0, 1, 2, 0, 2, 3],
             ('v2i', (100, 100,
