@@ -1,5 +1,10 @@
+import itertools
+
+import numpy as np
 import pyglet
 from pyglet.gl import *
+
+import geometry
 
 class GameWindow(pyglet.window.Window):
     def __init__(self, **kwargs):
@@ -20,6 +25,10 @@ class GameWindow(pyglet.window.Window):
         # FPS display, for debugging purposes
         self.fps_display = pyglet.clock.ClockDisplay()
 
+        # Zellij generator
+        self.zellij = geometry.Zellij()
+        self.zellij_colors = [[220, 100, 100], [100, 220, 100], [100, 100, 220], [220, 100, 220]]
+
     def setup_opengl(self):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -27,27 +36,41 @@ class GameWindow(pyglet.window.Window):
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glClearColor(0.2, 0.2, 0.2, 1)
 
-    def draw_line(self, a ,b):
+    def draw_line(self, a , b, color):
+        coords = tuple(itertools.chain(a, b))
+        color_tuple = tuple(itertools.chain(color, color))
         glLineWidth(1)
         pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
-            ('v2i', (a[0], a[1], b[0], b[1]))
+            ('v2i', coords),
+            ('c3B', color_tuple)
+        )
+
+
+    def draw_quad(self, a, b, c, d, color):
+        coords = np.array(tuple(itertools.chain(a, b, c, d)))
+        coords = 200 + coords
+        color_tuple = tuple(itertools.chain(color, color, color, color))
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+            ('v2i', coords),
+            ('c3B', color_tuple)
         )
 
     def draw_test(self):
-        self.draw_line([10, 10], [400, 20])
-        pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
-            [0, 1, 2, 0, 2, 3],
-            ('v2i', (100, 100,
-                     300, 100,
-                     300, 300,
-                     100, 300)),
-            ('c3B', (255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 0))
-        )
+        self.draw_line([10, 10], [400, 20], [200, 200, 200])
+        self.draw_quad([-10, 0], [0, 10], [10, 0], [0, -10], color=[100, 220, 100])
+
+    def draw_zellij(self):
+        for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
+            for a, b in zellij_sector.lines:
+                offset = np.array([self.width / 2, self.height / 2])
+                a, b = offset + a.astype(int), offset + b.astype(int)
+                self.draw_line(a, b, color=color)
 
     def on_draw(self):
         self.clear()
 
-        self.draw_test()
+        #self.draw_test()
+        self.draw_zellij()
 
         self.fps_display.draw()
 
