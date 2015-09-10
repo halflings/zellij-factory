@@ -4,7 +4,7 @@ import numpy as np
 import pyglet
 from pyglet.gl import *
 
-import geometry
+from geometry import Zellij
 
 class GameWindow(pyglet.window.Window):
     def __init__(self, **kwargs):
@@ -26,7 +26,7 @@ class GameWindow(pyglet.window.Window):
         self.fps_display = pyglet.clock.ClockDisplay()
 
         # Zellij generator
-        self.zellij = geometry.Zellij()
+        self.zellij = Zellij()
         self.zellij_colors = [[220, 100, 100], [100, 220, 100], [100, 100, 220], [220, 100, 220]]
 
     def setup_opengl(self):
@@ -47,8 +47,7 @@ class GameWindow(pyglet.window.Window):
 
 
     def draw_quad(self, a, b, c, d, color):
-        coords = np.array(tuple(itertools.chain(a, b, c, d)))
-        coords = 200 + coords
+        coords = np.array(tuple(itertools.chain(a, b, c, d))).astype(int)
         color_tuple = tuple(itertools.chain(color, color, color, color))
         pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
             ('v2i', coords),
@@ -60,11 +59,16 @@ class GameWindow(pyglet.window.Window):
         self.draw_quad([-10, 0], [0, 10], [10, 0], [0, -10], color=[100, 220, 100])
 
     def draw_zellij(self):
+        offset = np.array([self.width / 2, self.height / 2])
         for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
             for a, b in zellij_sector.lines:
-                offset = np.array([self.width / 2, self.height / 2])
                 a, b = offset + a.astype(int), offset + b.astype(int)
                 self.draw_line(a, b, color=color)
+
+        for p in self.zellij.intersections:
+            coords = [p - np.array([0, 4]), p - np.array([4, 0]), p + np.array([0, 4]), p + np.array([4, 0])]
+            coords = map(lambda p : p + offset, coords)
+            self.draw_quad(*coords, color=[220, 100, 100])
 
     def on_draw(self):
         self.clear()
@@ -78,7 +82,9 @@ class GameWindow(pyglet.window.Window):
         pass
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        pass
+        r = int(100 + 300.0 * (self.height - y) / self.height)
+        incr = int(5 + 10.0 * (self.width - x) / self.width)
+        self.zellij = Zellij(incr=incr, r=r)
 
     def on_mouse_press(self, x, y, button, modifiers):
         pass
