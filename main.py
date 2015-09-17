@@ -37,7 +37,7 @@ class GameWindow(pyglet.window.Window):
         glClearColor(0.2, 0.2, 0.2, 1)
 
     def draw_line(self, a , b, color):
-        coords = tuple(itertools.chain(a, b))
+        coords = tuple(itertools.chain(a.astype(int), b.astype(int)))
         color_tuple = tuple(itertools.chain(color, color))
         glLineWidth(1)
         pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
