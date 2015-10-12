@@ -36,7 +36,14 @@ class GameWindow(pyglet.window.Window):
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glClearColor(0.2, 0.2, 0.2, 1)
 
-    def draw_line(self, a , b, color):
+    def center_coords(self, *points):
+        offset = np.array([self.width / 2, self.height / 2])
+        for point in points:
+            yield offset + point
+
+
+    def draw_line(self, a, b, color):
+        a, b = self.center_coords(a, b)
         coords = tuple(itertools.chain(a.astype(int), b.astype(int)))
         color_tuple = tuple(itertools.chain(color, color))
         glLineWidth(1)
@@ -47,6 +54,7 @@ class GameWindow(pyglet.window.Window):
 
 
     def draw_quad(self, a, b, c, d, color):
+        a, b, c, d = self.center_coords(a, b, c, d)
         coords = np.array(tuple(itertools.chain(a, b, c, d))).astype(int)
         color_tuple = tuple(itertools.chain(color, color, color, color))
         pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
@@ -59,15 +67,12 @@ class GameWindow(pyglet.window.Window):
         self.draw_quad([-10, 0], [0, 10], [10, 0], [0, -10], color=[100, 220, 100])
 
     def draw_zellij(self):
-        offset = np.array([self.width / 2, self.height / 2])
         for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
             for a, b in zellij_sector.lines:
-                a, b = offset + a.astype(int), offset + b.astype(int)
                 self.draw_line(a, b, color=color)
 
         for p in self.zellij.intersections:
             coords = [p - np.array([0, 4]), p - np.array([4, 0]), p + np.array([0, 4]), p + np.array([4, 0])]
-            coords = map(lambda p : p + offset, coords)
             self.draw_quad(*coords, color=[220, 100, 100])
 
     def on_draw(self):
