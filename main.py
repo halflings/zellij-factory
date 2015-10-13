@@ -26,7 +26,11 @@ class GameWindow(pyglet.window.Window):
         self.fps_display = pyglet.clock.ClockDisplay()
 
         # Zellij generator
-        self.zellij = Zellij()
+        self.r = 100
+        self.incr = 5
+        self.scroll_y = 0
+        self.init_angle = 0
+        self.zellij = Zellij(self.r, self.incr, self.init_angle)
         self.zellij_colors = [[220, 100, 100], [100, 220, 100], [100, 100, 220], [220, 100, 220]]
 
     def setup_opengl(self):
@@ -71,8 +75,12 @@ class GameWindow(pyglet.window.Window):
             for a, b in zellij_sector.lines:
                 self.draw_line(a, b, color=color)
 
-        for p in self.zellij.intersections:
-            coords = [p - np.array([0, 4]), p - np.array([4, 0]), p + np.array([0, 4]), p + np.array([4, 0])]
+        for p, s, o_s in self.zellij.intersections:
+            su, osu = 2 * s.unit, 2 * o_s.unit
+            coords = [p - su - osu,
+                      p - su + osu,
+                      p + su + osu,
+                      p + su - osu]
             self.draw_quad(*coords, color=[220, 100, 100])
 
     def on_draw(self):
@@ -87,9 +95,17 @@ class GameWindow(pyglet.window.Window):
         pass
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        r = int(100 + 300.0 * (self.height - y) / self.height)
-        incr = int(5 + 10.0 * (self.width - x) / self.width)
-        self.zellij = Zellij(incr=incr, r=r)
+        self.r = max(10, int(100 + 300.0 * (self.height - y) / self.height))
+        self.incr = max(1, int(5 + 10.0 * (self.width - x) / self.width))
+        self.regenerate_zellij()
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        self.scroll_y += scroll_y
+        self.init_angle = int((self.scroll_y // 8) * 7.5)
+        self.regenerate_zellij()
+
+    def regenerate_zellij(self):
+        self.zellij = Zellij(incr=self.incr, r=self.r, init_angle=self.init_angle)
 
     def on_mouse_press(self, x, y, button, modifiers):
         pass

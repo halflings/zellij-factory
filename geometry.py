@@ -39,8 +39,8 @@ class ZellijSector(object):
 
 
 class Zellij(object):
-    def __init__(self, r=90, incr=4):
-        self.sectors = [ZellijSector(angle, r, incr) for angle in range(0, 136, int(135/3))]
+    def __init__(self, r=90, incr=4, init_angle=0):
+        self.sectors = [ZellijSector(angle, r, incr) for angle in range(init_angle, init_angle + 136, int(135/3))]
         self.intersections = []
 
         for sector in self.sectors:
@@ -58,9 +58,4 @@ class Zellij(object):
                 intersection = segment_intersection(line[0], line[1], o_line[0], o_line[1])
                 if intersection is None:
                     continue
-                self.intersections.append(intersection)
-
-if __name__ == '__main__':
-    z = Zellij(angle=45)
-
-    print(z.lines)
+                self.intersections.append((intersection, sector, o_sector))
