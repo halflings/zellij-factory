@@ -31,7 +31,7 @@ class GameWindow(pyglet.window.Window):
         self.scroll_y = 0
         self.init_angle = 0
         self.zellij = Zellij(self.r, self.incr, self.init_angle)
-        self.zellij_colors = [[220, 100, 100], [100, 220, 100], [100, 100, 220], [220, 100, 220]]
+        self.zellij_colors = [[220, 100, 100], [100, 160, 100], [100, 100, 220], [220, 100, 220]]
 
     def setup_opengl(self):
         glEnable(GL_BLEND)
@@ -71,10 +71,21 @@ class GameWindow(pyglet.window.Window):
         self.draw_quad([-10, 0], [0, 10], [10, 0], [0, -10], color=[100, 220, 100])
 
     def draw_zellij(self):
+        # Drawing sectors' background
+        for sector, color in zip(self.zellij.sectors, self.zellij_colors):
+            c = np.array([0, 0])
+            su, sn = sector.r * sector.unit, sector.r * sector.normal
+            self.draw_quad(c - su - sn,
+                           c + su - sn,
+                           c + su + sn,
+                           c - su + sn, color=(0.2 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
+
+        # Drawing sectors' lines
         for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
             for a, b in zellij_sector.lines:
                 self.draw_line(a, b, color=color)
 
+        # Drawing intersections
         for p, s, o_s in self.zellij.intersections:
             su, osu = 2 * s.unit, 2 * o_s.unit
             coords = [p - su - osu,
@@ -82,6 +93,7 @@ class GameWindow(pyglet.window.Window):
                       p + su + osu,
                       p + su - osu]
             self.draw_quad(*coords, color=[220, 100, 100])
+
 
     def on_draw(self):
         self.clear()
