@@ -3,6 +3,8 @@ import itertools
 import numpy as np
 import pyglet
 from pyglet.gl import *
+import seaborn as sns
+sns.set_palette('deep')
 
 from geometry import Zellij
 
@@ -28,10 +30,10 @@ class GameWindow(pyglet.window.Window):
         # Zellij generator
         self.r = 100
         self.incr = 5
-        self.scroll_y = 0
         self.init_angle = 0
+        self.scroll_y = 0
         self.zellij = Zellij(self.r, self.incr, self.init_angle)
-        self.zellij_colors = [[220, 100, 100], [100, 160, 100], [100, 100, 220], [220, 100, 220]]
+        self.zellij_colors = [(np.array(c) * 255).astype(int) for c in sns.color_palette()]
 
     def setup_opengl(self):
         glEnable(GL_BLEND)
@@ -78,21 +80,21 @@ class GameWindow(pyglet.window.Window):
             self.draw_quad(c - su - sn,
                            c + su - sn,
                            c + su + sn,
-                           c - su + sn, color=(0.2 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
+                           c - su + sn, color=(0.5 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
 
         # Drawing sectors' lines
         for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
             for a, b in zellij_sector.lines:
-                self.draw_line(a, b, color=color)
+                self.draw_line(a, b, color=(0.3 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
 
-        # Drawing intersections
-        for p, s, o_s in self.zellij.intersections:
-            su, osu = 2 * s.unit, 2 * o_s.unit
-            coords = [p - su - osu,
-                      p - su + osu,
-                      p + su + osu,
-                      p + su - osu]
-            self.draw_quad(*coords, color=[220, 100, 100])
+        # # Drawing intersections
+        # for p, s, o_s in self.zellij.intersections:
+        #     su, osu = 2 * s.unit, 2 * o_s.unit
+        #     coords = [p - su - osu,
+        #               p - su + osu,
+        #               p + su + osu,
+        #               p + su - osu]
+        #     self.draw_quad(*coords, color=[80, 80, 80])
 
 
     def on_draw(self):
@@ -113,10 +115,13 @@ class GameWindow(pyglet.window.Window):
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         self.scroll_y += scroll_y
-        self.init_angle = int((self.scroll_y // 8) * 7.5)
+        self.init_angle = int((self.scroll_y // 2) * 7.5) % 180
         self.regenerate_zellij()
 
     def regenerate_zellij(self):
+        z = self.zellij
+        if z.r == self.r and z.incr == self.incr and z.init_angle == self.init_angle:
+            return
         self.zellij = Zellij(incr=self.incr, r=self.r, init_angle=self.init_angle)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -126,5 +131,5 @@ class GameWindow(pyglet.window.Window):
         pass
 
 if __name__ == '__main__':
-    window = GameWindow(width=800, height=600)
+    window = GameWindow(width=1200, height=800)
     pyglet.app.run()

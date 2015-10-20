@@ -40,7 +40,10 @@ class ZellijSector(object):
 
 class Zellij(object):
     def __init__(self, r=90, incr=4, init_angle=0):
-        self.sectors = [ZellijSector(angle, r, incr) for angle in range(init_angle, init_angle + 136, int(135/3))]
+        self.r = r
+        self.incr = incr
+        self.init_angle = init_angle
+        self.sectors = [ZellijSector(angle, r, incr) for angle in range(init_angle, init_angle + 136, int(135/5))]
         self.intersections = []
 
         for sector in self.sectors:
