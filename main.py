@@ -80,11 +80,11 @@ class GameWindow(pyglet.window.Window):
             self.draw_quad(c - su - sn,
                            c + su - sn,
                            c + su + sn,
-                           c - su + sn, color=(0.5 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
+                           c - su + sn, color=(0.6 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
 
         # Drawing sectors' lines
-        for zellij_sector, color in zip(self.zellij.sectors, self.zellij_colors):
-            for a, b in zellij_sector.lines:
+        for sector, color in zip(self.zellij.sectors, self.zellij_colors):
+            for a, b in sector.lines:
                 self.draw_line(a, b, color=(0.3 * np.array(color) + 0.2 * 255 * np.ones(3)).astype(int))
 
         # # Drawing intersections

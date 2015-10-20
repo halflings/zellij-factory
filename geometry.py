@@ -32,9 +32,11 @@ class ZellijSector(object):
         self.normal = np.array([cos(angle + pi/2), sin(angle + pi/2)])
 
         self.lines = []
-        for off in range(-r, r + 1, int(r/incr)):
+        pad = 1.5
+        for off in np.arange(-pad * r, pad * r + 1, float(r) / incr):
             p = off * self.normal
-            a, b = p - r * self.unit, p + r * self.unit
+            a, b = p - pad * r * self.unit, p + pad * r * self.unit
+            a, b = a.astype(int), b.astype(int)
             self.lines.append((a, b))
 
 
@@ -43,7 +45,7 @@ class Zellij(object):
         self.r = r
         self.incr = incr
         self.init_angle = init_angle
-        self.sectors = [ZellijSector(angle, r, incr) for angle in range(init_angle, init_angle + 136, int(135/5))]
+        self.sectors = [ZellijSector(angle, r, incr) for angle in range(init_angle, init_angle + 135 + 1, int(135/4))]
         self.intersections = []
 
         for sector in self.sectors:
